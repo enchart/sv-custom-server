@@ -1,63 +1,77 @@
 {
-  "name": "sv-websocket",
-  "version": "5.4.0",
-  "description": "Fork of @sveltejs/adapter-node with WebSockets support",
-  "keywords": [
-    "adapter",
-    "deploy",
-    "hosting",
-    "node.js",
-    "svelte",
-    "sveltekit",
-    "websockets"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enchart/sv-websocket.git"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/enchart/sv-websocket",
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./index.d.ts",
-      "import": "./index.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "types": "index.d.ts",
-  "files": [
-    "files",
-    "index.js",
-    "index.d.ts",
-    "ambient.d.ts"
-  ],
-  "scripts": {
-    "dev": "rollup -cw",
-    "build": "rollup -c",
-    "test": "vitest run",
-    "check": "tsc",
-    "lint": "prettier --check .",
-    "format": "pnpm lint --write",
-    "prepublishOnly": "pnpm build"
-  },
-  "devDependencies": {
-    "@polka/url": "^1.0.0-next.28",
-    "@sveltejs/kit": "^2.48.5",
-    "@sveltejs/vite-plugin-svelte": "^6.0.0-next.3",
-    "@types/node": "^18.19.119",
-    "polka": "^1.0.0-next.28",
-    "sirv": "^3.0.2",
-    "typescript": "^5.3.3",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "rollup": "^4.9.5"
-  },
-  "peerDependencies": {
-    "@sveltejs/kit": "^2.4.0"
-  }
+	"name": "sv-websocket",
+	"version": "5.4.0",
+	"description": "Fork of @sveltejs/adapter-node with WebSockets support",
+	"keywords": [
+		"adapter",
+		"deploy",
+		"hosting",
+		"node.js",
+		"svelte",
+		"sveltekit",
+		"websockets"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/enchart/sv-websocket.git"
+	},
+	"license": "MIT",
+	"homepage": "https://github.com/enchart/sv-websocket",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"types": "index.d.ts",
+	"files": [
+		"files",
+		"index.js",
+		"index.d.ts",
+		"ambient.d.ts"
+	],
+	"scripts": {
+		"dev": "rollup -cw",
+		"build": "rollup -c",
+		"test": "vitest run",
+		"check": "tsc",
+		"lint": "prettier --check .",
+		"format": "pnpm lint --write",
+		"prepublishOnly": "pnpm build"
+	},
+	"devDependencies": {
+		"@polka/url": "^1.0.0-next.28",
+		"@sveltejs/eslint-config": "^8.2.0",
+		"@sveltejs/kit": "^2.48.5",
+		"@sveltejs/vite-plugin-svelte": "^6.0.0-next.3",
+		"@types/node": "^18.19.119",
+		"eslint": "^9.34.0",
+		"polka": "^1.0.0-next.28",
+		"prettier": "^3.6.0",
+		"prettier-plugin-svelte": "^3.4.0",
+		"sirv": "^3.0.2",
+		"typescript": "^5.3.3",
+		"typescript-eslint": "^8.43.0",
+		"vitest": "^3.2.4"
+	},
+	"dependencies": {
+		"@rollup/plugin-commonjs": "^28.0.1",
+		"@rollup/plugin-json": "^6.1.0",
+		"@rollup/plugin-node-resolve": "^16.0.0",
+		"rollup": "^4.9.5"
+	},
+	"peerDependencies": {
+		"@sveltejs/kit": "^2.4.0"
+	},
+	"packageManager": "pnpm@10.22.0",
+	"engines": {
+		"pnpm": ">=9.0.0"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	}
 }

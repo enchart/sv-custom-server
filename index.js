@@ -23,7 +23,7 @@ export default function (opts = {}) {
 	const { out = 'build', precompress = true, envPrefix = '' } = opts;
 
 	return {
-		name: '@sveltejs/adapter-node',
+		name: 'sv-websocket',
 		/** @param {Builder2_4_0} builder */
 		async adapt(builder) {
 			const tmp = builder.getBuildDirectory('adapter-node');
