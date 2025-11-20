@@ -4,9 +4,13 @@ declare global {
 	namespace App {
 		export interface Platform {
 			/**
-			 * The original Node request object (https://nodejs.org/api/http.html#class-httpincomingmessage)
+			 * The original Node HTTP server object (https://nodejs.org/api/http.html#class-httpserver)
 			 */
-			req: http.IncomingMessage;
+			server: http.Server;
+
+			settings: HttpServerSettings & Record<string, any>;
 		}
+
+		export interface HttpServerSettings {}
 	}
 }

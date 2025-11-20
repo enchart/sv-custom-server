@@ -1,9 +1,21 @@
+declare global {
+	var sv_websocket_server: import('node:http').Server;
+	var sv_websocket_settings: App.Platform['settings'];
+}
+
 declare module 'ENV' {
 	export function env(key: string, fallback?: any): string;
 }
 
 declare module 'HANDLER' {
-	export const handler: import('polka').Middleware;
+	import http from 'node:http';
+
+	export const handler: (
+		httpServer: http.Server,
+		settings: App.HttpServerSettings
+	) => import('polka').Middleware;
+
+	export const initHttpServer: import('./index.d.ts').InitHttpServer | undefined;
 }
 
 declare module 'MANIFEST' {
@@ -17,3 +29,5 @@ declare module 'MANIFEST' {
 declare module 'SERVER' {
 	export { Server } from '@sveltejs/kit';
 }
+
+export {};

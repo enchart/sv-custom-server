@@ -93,70 +93,77 @@ function serve_prerendered() {
 	};
 }
 
-/** @type {import('polka').Middleware} */
-const ssr = async (req, res) => {
-	/** @type {Request} */
-	let request;
+/**
+ *
+ * @param {import('http').Server} httpServer
+ * @param {App.HttpServerSettings} settings
+ * @returns {import('polka').Middleware}
+ */
+const ssr = (httpServer, settings) => {
+	return async (req, res) => {
+		/** @type {Request} */
+		let request;
 
-	try {
-		request = await getRequest({
-			base: origin || get_origin(req.headers),
-			request: req,
-			bodySizeLimit: body_size_limit
-		});
-	} catch {
-		res.statusCode = 400;
-		res.end('Bad Request');
-		return;
-	}
+		try {
+			request = await getRequest({
+				base: origin || get_origin(req.headers),
+				request: req,
+				bodySizeLimit: body_size_limit
+			});
+		} catch {
+			res.statusCode = 400;
+			res.end('Bad Request');
+			return;
+		}
 
-	await setResponse(
-		res,
-		await server.respond(request, {
-			platform: { req },
-			getClientAddress: () => {
-				if (address_header) {
-					if (!(address_header in req.headers)) {
-						throw new Error(
-							`Address header was specified with ${
-								ENV_PREFIX + 'ADDRESS_HEADER'
-							}=${address_header} but is absent from request`
-						);
-					}
-
-					const value = /** @type {string} */ (req.headers[address_header]) || '';
-
-					if (address_header === 'x-forwarded-for') {
-						const addresses = value.split(',');
-
-						if (xff_depth < 1) {
-							throw new Error(`${ENV_PREFIX + 'XFF_DEPTH'} must be a positive integer`);
-						}
-
-						if (xff_depth > addresses.length) {
+		await setResponse(
+			res,
+			await server.respond(request, {
+				platform: { req, server: httpServer, settings },
+				getClientAddress: () => {
+					if (address_header) {
+						if (!(address_header in req.headers)) {
 							throw new Error(
-								`${ENV_PREFIX + 'XFF_DEPTH'} is ${xff_depth}, but only found ${
-									addresses.length
-								} addresses`
+								`Address header was specified with ${
+									ENV_PREFIX + 'ADDRESS_HEADER'
+								}=${address_header} but is absent from request`
 							);
 						}
-						return addresses[addresses.length - xff_depth].trim();
+
+						const value = /** @type {string} */ (req.headers[address_header]) || '';
+
+						if (address_header === 'x-forwarded-for') {
+							const addresses = value.split(',');
+
+							if (xff_depth < 1) {
+								throw new Error(`${ENV_PREFIX + 'XFF_DEPTH'} must be a positive integer`);
+							}
+
+							if (xff_depth > addresses.length) {
+								throw new Error(
+									`${ENV_PREFIX + 'XFF_DEPTH'} is ${xff_depth}, but only found ${
+										addresses.length
+									} addresses`
+								);
+							}
+							return addresses[addresses.length - xff_depth].trim();
+						}
+
+						return value;
 					}
 
-					return value;
+					return (
+						req.connection?.remoteAddress ||
+						// @ts-expect-error
+						req.connection?.socket?.remoteAddress ||
+						req.socket?.remoteAddress ||
+						// @ts-expect-error
+						req.info?.remoteAddress
+					);
 				}
-
-				return (
-					req.connection?.remoteAddress ||
-					// @ts-expect-error
-					req.connection?.socket?.remoteAddress ||
-					req.socket?.remoteAddress ||
-					// @ts-expect-error
-					req.info?.remoteAddress
-				);
-			}
-		})
-	);
+			})
+		);
+	};
 };
 
 /** @param {import('polka').Middleware[]} handlers */
@@ -191,7 +198,21 @@ function get_origin(headers) {
 	return port ? `${protocol}://${host}:${port}` : `${protocol}://${host}`;
 }
 
-export const handler = sequence(
-	/** @type {(import('sirv').RequestHandler | import('polka').Middleware)[]} */
-	([serve(path.join(dir, 'client'), true), serve_prerendered(), ssr].filter(Boolean))
-);
+/**
+ *
+ * @param {import('http').Server} httpServer
+ * @param {App.HttpServerSettings} settings
+ * @returns {import('polka').Middleware}
+ */
+export function handler(httpServer, settings) {
+	return sequence(
+		/** @type {(import('sirv').RequestHandler | import('polka').Middleware)[]} */
+		(
+			[
+				serve(path.join(dir, 'client'), true),
+				serve_prerendered(),
+				ssr(httpServer, settings)
+			].filter(Boolean)
+		)
+	);
+}

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { rollup } from 'rollup';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -90,7 +90,7 @@ export default function (opts = {}) {
 				]
 			});
 
-			await bundle.write({
+			const { output } = await bundle.write({
 				dir: `${out}/server`,
 				format: 'esm',
 				sourcemap: true,
@@ -108,6 +108,16 @@ export default function (opts = {}) {
 				}
 			});
 
+			const hooksChunk = output.find((o) => o.name === 'hooks.server');
+			if (hooksChunk?.type === 'chunk' && hooksChunk.exports.includes('initHttpServer')) {
+				appendFileSync(
+					`${out}/handler.js`,
+					`\nexport { initHttpServer } from './server/${hooksChunk.fileName}';`
+				);
+			} else {
+				appendFileSync(`${out}/handler.js`, `\nexport const initHttpServer = undefined;`);
+			}
+
 			if (builder.hasServerInstrumentationFile?.()) {
 				builder.instrument?.({
 					entrypoint: `${out}/index.js`,
@@ -117,6 +127,15 @@ export default function (opts = {}) {
 					}
 				});
 			}
+		},
+
+		async emulate() {
+			return {
+				platform: () => ({
+					server: globalThis.sv_websocket_server,
+					settings: globalThis.sv_websocket_settings
+				})
+			};
 		},
 
 		supports: {
