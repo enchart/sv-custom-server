@@ -96,10 +96,10 @@ function serve_prerendered() {
 /**
  *
  * @param {import('http').Server} httpServer
- * @param {App.HttpServerSettings} settings
+ * @param {App.HttpServerContext} context
  * @returns {import('polka').Middleware}
  */
-const ssr = (httpServer, settings) => {
+const ssr = (httpServer, context) => {
 	return async (req, res) => {
 		/** @type {Request} */
 		let request;
@@ -119,7 +119,7 @@ const ssr = (httpServer, settings) => {
 		await setResponse(
 			res,
 			await server.respond(request, {
-				platform: { req, server: httpServer, settings },
+				platform: { req, server: httpServer, context },
 				getClientAddress: () => {
 					if (address_header) {
 						if (!(address_header in req.headers)) {
@@ -201,18 +201,16 @@ function get_origin(headers) {
 /**
  *
  * @param {import('http').Server} httpServer
- * @param {App.HttpServerSettings} settings
+ * @param {App.HttpServerContext} context
  * @returns {import('polka').Middleware}
  */
-export function handler(httpServer, settings) {
+export function handler(httpServer, context) {
 	return sequence(
 		/** @type {(import('sirv').RequestHandler | import('polka').Middleware)[]} */
 		(
-			[
-				serve(path.join(dir, 'client'), true),
-				serve_prerendered(),
-				ssr(httpServer, settings)
-			].filter(Boolean)
+			[serve(path.join(dir, 'client'), true), serve_prerendered(), ssr(httpServer, context)].filter(
+				Boolean
+			)
 		)
 	);
 }

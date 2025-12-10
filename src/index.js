@@ -33,10 +33,10 @@ let shutdown_timeout_id;
 let idle_timeout_id;
 
 const httpServer = createServer();
-const settings = {};
+const context = {};
 
-const server = polka({ server: httpServer }).use(handler(httpServer, settings));
-const shutdownHttpServer = await initHttpServer?.({ server: httpServer, settings });
+const server = polka({ server: httpServer }).use(handler(httpServer, context));
+const shutdownHttpServer = await initHttpServer?.({ server: httpServer, context });
 
 if (socket_activation) {
 	server.listen({ fd: SD_LISTEN_FDS_START }, () => {

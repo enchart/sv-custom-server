@@ -16,7 +16,7 @@ type Cleanup = () => void | Promise<void>;
 
 export type InitHttpServer = (options: {
 	server: http.Server;
-	settings: App.HttpServerSettings;
+	context: App.HttpServerContext;
 }) =>
   | void
   | Cleanup

@@ -1,6 +1,8 @@
 declare global {
-	var sv_websocket_server: import('node:http').Server;
-	var sv_websocket_settings: App.Platform['settings'];
+	var sv_custom_server: {
+		server: import('node:http').Server;
+		context: App.Platform['context'];
+	}
 }
 
 declare module 'ENV' {
@@ -12,7 +14,7 @@ declare module 'HANDLER' {
 
 	export const handler: (
 		httpServer: http.Server,
-		settings: App.HttpServerSettings
+		context: App.HttpServerContext
 	) => import('polka').Middleware;
 
 	export const initHttpServer: import('./index.d.ts').InitHttpServer | undefined;

@@ -1,3 +1,4 @@
 import { Plugin } from 'vite';
+import './ambient.js';
 
-export function httpServer(): Plugin;
+export default function customServer(): Plugin;

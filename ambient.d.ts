@@ -8,9 +8,9 @@ declare global {
 			 */
 			server: http.Server;
 
-			settings: HttpServerSettings & Record<string, any>;
+			context: HttpServerContext & Record<string, any>;
 		}
 
-		export interface HttpServerSettings {}
+		export interface HttpServerContext {}
 	}
 }
