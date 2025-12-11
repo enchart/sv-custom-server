@@ -1,6 +1,6 @@
 {
 	"name": "sv-custom-server",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Full customization of your SvelteKit Node server (for WebSockets, Socket.IO etc.)",
 	"keywords": [
 		"adapter",

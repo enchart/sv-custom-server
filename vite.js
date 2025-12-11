@@ -5,11 +5,12 @@ import colors from 'picocolors';
 
 /**
  * @param {import('vite').ResolvedConfig} config
+ * @param {import('vite').ViteDevServer} viteServer
  * @param {import('node:http').Server} httpServer
  * @param {App.HttpServerContext} context
  * @returns {undefined | import('rollup').MaybePromise<void>}
  */
-async function runInitServerHook(config, httpServer, context) {
+async function runInitServerHook(config, viteServer, httpServer, context) {
 	let file = path.join(config.root, 'src/hooks.server');
 	if (existsSync(`${file}.js`)) {
 		file += '.js';
@@ -20,7 +21,7 @@ async function runInitServerHook(config, httpServer, context) {
 	}
 
 	/** @type {{ initHttpServer?: import('./index').InitHttpServer }} */
-	const { initHttpServer } = await import(/* @vite-ignore */ `file://${file}?t=${Date.now()}`);
+	const { initHttpServer } = await viteServer.ssrLoadModule(file);
 	return await initHttpServer?.({ server: httpServer, context });
 }
 
@@ -89,8 +90,13 @@ export default function customServer() {
 				context: {}
 			};
 
-			shutdown = await runInitServerHook(config, httpServer, globalThis.sv_custom_server.context);
-			httpServer.on('close', async () => await shutdown?.());
+			shutdown = await runInitServerHook(
+				config,
+				server,
+				httpServer,
+				globalThis.sv_custom_server.context
+			);
+			httpServer.on('close', () => async () => await shutdown?.());
 		},
 
 		async configurePreviewServer(server) {
@@ -100,23 +106,41 @@ export default function customServer() {
 				context: {}
 			};
 
-			shutdown = await runInitServerHook(config, httpServer, globalThis.sv_custom_server.context);
+			shutdown = await runInitServerHook(
+				config,
+				server,
+				httpServer,
+				globalThis.sv_custom_server.context
+			);
+
 			httpServer.on('close', async () => await shutdown?.());
 		},
 
-		async handleHotUpdate({ file }) {
+		async handleHotUpdate({ server, file }) {
 			let name = path.resolve(file);
 			if (!name.startsWith(path.resolve(config.root, 'src/hooks.server'))) {
 				return;
 			}
 
-			config.logger.info(colors.green(`${path.basename(file)} changed, restarting server...`), {
-				timestamp: true,
-				clear: true
-			});
+			try {
+				await shutdown?.();
+				config.logger.info(colors.green(`${path.basename(file)} changed, restarting server...`), {
+					timestamp: true,
+					clear: true
+				});
+			} catch (err) {
+				config.logger.error(colors.red(`Failed to run server cleanup function`), {
+					timestamp: true
+				});
+				config.logger.error(err?.stack ?? err, { timestamp: true });
+			}
 
-			await shutdown?.();
-			shutdown = await runInitServerHook(config, httpServer);
+			shutdown = await runInitServerHook(
+				config,
+				server,
+				httpServer,
+				globalThis.sv_custom_server.context
+			);
 		}
 	};
 }
